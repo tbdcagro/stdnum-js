@@ -5,17 +5,14 @@
   "files": [
     "README.md",
     "LICENSE.txt",
-    "dist",
-    "lib"
+    "dist"
   ],
   "main": "./dist/index.js",
-  "module": "./lib/esm/index.js",
+  "module": "./dist/esm/src/index.js",
   "types": "./dist/index.d.ts",
-  "exports_NOT_YET": {
-    "./": {
-      "import": "./lib/esm/",
-      "require": "./lib/cjs/"
-    }
+  "exports": {
+    "import": "./dist/esm/src/index.js",
+    "require": "./dist/index.js"
   },
   "overrides": {
     "minimatch": "^9.0.7"
@@ -70,6 +67,7 @@
     "@swc/core": "^1.11.9",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
+    "cross-env": "^10.1.0",
     "eslint": "^9.22.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^10.0.1",
