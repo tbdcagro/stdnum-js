@@ -2,7 +2,8 @@
  * ICE (a Moroccan company establishment identification number).
  *
  * The ICE (Identifiant Commun de l'Entreprises)
- * is a 15 (9 positions for the company, 4 positions for the establishment and 2 control digits), digit number used to identify Moroccan companies' establishments
+ * is a 15 (9 positions for the company, 4 positions for the establishment and 2 control digits),
+ * digit number used to identify Moroccan companies' establishments
  * and facilities. The validation checksum is unknown
  *
  * Sources
@@ -15,7 +16,7 @@
 
 import * as exceptions from '../exceptions';
 import { strings, mod97base10Validate } from '../util';
-import { Validator, ValidateReturn } from '../types';
+import { Validator, ValidateReturn } from '../types/types';
 
 function clean(input: string): ReturnType<typeof strings.cleanUnicode> {
   return strings.cleanUnicode(input, ' -/');
@@ -68,5 +69,4 @@ const impl: Validator = {
   },
 };
 
-export const { name, localName, abbreviation, validate, format, compact } =
-  impl;
+export const { name, localName, abbreviation, validate, format, compact } = impl;

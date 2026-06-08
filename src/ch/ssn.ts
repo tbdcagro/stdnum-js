@@ -14,8 +14,8 @@
 
 import * as exceptions from '../exceptions';
 import { strings } from '../util';
-import { Validator, ValidateReturn } from '../types';
-import { ean } from '../gen';
+import { Validator, ValidateReturn } from '../types/types';
+import gen from '../gen';
 
 function clean(input: string): ReturnType<typeof strings.cleanUnicode> {
   return strings.cleanUnicode(input, ' -.');
@@ -57,7 +57,7 @@ const impl: Validator = {
       return { isValid: false, error: new exceptions.InvalidComponent() };
     }
 
-    if (!ean.validate(value).isValid) {
+    if (!gen.ean.validate(value).isValid) {
       return { isValid: false, error: new exceptions.InvalidChecksum() };
     }
 
@@ -70,5 +70,4 @@ const impl: Validator = {
   },
 };
 
-export const { name, localName, abbreviation, validate, format, compact } =
-  impl;
+export const { name, localName, abbreviation, validate, format, compact } = impl;
