@@ -1,12 +1,12 @@
 {
-  "name": "stdnum",
-  "version": "1.11.13",
+  "name": "@tbdcagro/stdnum",
+  "version": "0.0.0",
   "description": "Standard Number Validation",
   "files": [
     "README.md",
     "LICENSE.txt",
-    "lib",
-    "src"
+    "dist",
+    "lib"
   ],
   "main": "./dist/index.js",
   "module": "./lib/esm/index.js",
@@ -48,7 +48,8 @@
     "prepare": "cross-env HUSKY_SKIP_INSTALL=1 && husky install || echo 'Husky install skipped for production build'"
   },
   "publishConfig": {
-    "provenance": true
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   },
   "author": "David Koblas",
   "keywords": [
@@ -59,10 +60,6 @@
     "validation",
     "validator"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/koblas/stdnum-js.git"
-  },
   "license": "MIT",
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.0",

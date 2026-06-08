@@ -1,0 +1,116 @@
+name: Release
+
+on:
+  push:
+    paths:
+        - src/**
+        - pnpm-lock.yaml
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Build, Version, Tag and Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Stop if commit was made by GitHub App
+        if: github.actor == 'github-actions[bot]' || github.actor == 'tbdc-actions-auto-commit-bot'
+        run: |
+          echo "Commit feito pelo github-actions[bot]. Encerrando para evitar loop."
+          exit 0
+      - name: Get token for gh app Token
+        id: get_workflow_token
+        uses: peter-murray/workflow-application-token-action@v3
+        with:
+          application_id: ${{ vars.AUTOCOMMIT_APP_ID }}
+          application_private_key: ${{ secrets.AUTOCOMMIT_APP_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.get_workflow_token.outputs.token }} 
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Build library
+        run: pnpm build
+
+      - name: Bump version (patch)
+        run: |
+          npm version patch --no-git-tag-version
+
+      - name: Get current version
+        id: get_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push version bump
+        env:
+            GH_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "🔖 release v${{ steps.get_version.outputs.version }}"
+
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
+
+          git push origin main
+
+      - name: Get previous tag
+        id: get_previous_tag
+        run: echo "tag=$(git describe --tags --abbrev=0 || echo '')" >> "$GITHUB_OUTPUT"
+
+      - name: Create Git Tag
+        env:
+          GH_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.get_version.outputs.version }}"
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
+          git push origin "${{ steps.get_version.outputs.version }}"
+
+      - name: Publish to NPM (restricted package)
+        run: pnpm publish --access restricted
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          PREV_TAG=${{ steps.get_previous_tag.outputs.tag }}
+          CURR_TAG=${{ steps.get_version.outputs.version }}
+
+          if [ -z "$PREV_TAG" ]; then
+            LOG=$(git log --pretty=format:"- %s")
+          else
+            LOG=$(git log "$PREV_TAG"..HEAD --pretty=format:"- %s")
+          fi
+
+          echo "log<<EOF" >> $GITHUB_OUTPUT
+          echo "$LOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          name: v${{ steps.get_version.outputs.version }}
+          body: ${{ steps.changelog.outputs.log }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
