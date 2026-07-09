@@ -20,6 +20,12 @@ describe('py/ruc', () => {
     expect(result.isValid && result.compact).toEqual('87654326');
   });
 
+  it('validate:80034742-0', () => {
+    const result = validate('80034742-0');
+
+    expect(result.isValid && result.compact).toEqual('800347420');
+  });
+
   it('validate:2660-3', () => {
     const result = validate('2660-3');
 

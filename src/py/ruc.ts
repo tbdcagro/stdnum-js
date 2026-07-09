@@ -72,7 +72,8 @@ const impl: Validator = {
       .map((x) => parseInt(x, 10))
       .reduce((acc, digit, idx) => acc + digit * (idx + 2), 0);
 
-    const digit = String((11 - (sum % 11)) % 10);
+    const remainder = sum % 11;
+    const digit = String(remainder > 1 ? 11 - remainder : 0);
 
     if (check !== digit) {
       return { isValid: false, error: new exceptions.InvalidChecksum() };
